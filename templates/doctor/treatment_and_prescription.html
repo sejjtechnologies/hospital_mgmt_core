@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Treatment & Prescription</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .section { display: none; }
+    .section.active { display: block; }
+    .back-btn {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+    }
+  </style>
+</head>
+<body class="bg-light">
+
+  <!-- Back Button fixed to top-left -->
+  <button class="btn btn-primary text-white back-btn" onclick="window.history.back()">Back</button>
+
+  <div class="container mt-5">
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mt-2">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <h2 class="text-center fw-bold text-success">🩺 Treatment & Prescription</h2>
+    <p class="text-center text-muted">Select a treatment action and fill in the details below.</p>
+
+    <!-- Action Selector -->
+    <div class="mb-4">
+      <label for="action_type" class="form-label">Select Action</label>
+      <select id="action_type" class="form-select" onchange="toggleSection(this.value)">
+        <option value="">-- Choose --</option>
+        <option value="prescription">Generate Prescription</option>
+        <option value="test">Recommend Test</option>
+        <option value="referral">Refer Patient</option>
+        <option value="followup">Schedule Follow-Up</option>
+      </select>
+    </div>
+
+    <!-- Prescription Form -->
+    <form method="POST" action="{{ url_for('doctor.prescribe') }}" class="section" id="prescription">
+      <h5 class="text-primary">💊 Prescription Details</h5>
+      <div class="mb-3">
+        <label for="appointment_id" class="form-label">Select Appointment</label>
+        {% if appointments %}
+          <select name="appointment_id" class="form-select" required>
+            {% for appt in appointments %}
+              <option value="{{ appt.id }}">#{{ appt.id }} - {{ appt.patient_name }}</option>
+            {% endfor %}
+          </select>
+        {% else %}
+          <div class="alert alert-warning">⚠️ No appointments assigned to you yet.</div>
+        {% endif %}
+      </div>
+      <div class="mb-3">
+        <label for="medication" class="form-label">Medication</label>
+        <input type="text" name="medication" class="form-control">
+      </div>
+      <div class="mb-3">
+        <label for="dosage" class="form-label">Dosage</label>
+        <input type="text" name="dosage" class="form-control">
+      </div>
+      <div class="mb-3">
+        <label for="duration" class="form-label">Duration</label>
+        <input type="text" name="duration" class="form-control">
+      </div>
+      <div class="mb-3">
+        <label for="notes" class="form-label">Notes</label>
+        <textarea name="notes" class="form-control"></textarea>
+      </div>
+      <button type="submit" class="btn btn-success">Submit Prescription</button>
+    </form>
+
+    <!-- Test Recommendation Form -->
+    <form method="POST" action="{{ url_for('doctor.recommend_test') }}" class="section" id="test">
+      <h5 class="text-primary">🧪 Test Recommendation</h5>
+      <div class="mb-3">
+        <label for="appointment_id" class="form-label">Select Appointment</label>
+        {% if appointments %}
+          <select name="appointment_id" class="form-select" required>
+            {% for appt in appointments %}
+              <option value="{{ appt.id }}">#{{ appt.id }} - {{ appt.patient_name }}</option>
+            {% endfor %}
+          </select>
+        {% else %}
+          <div class="alert alert-warning">⚠️ No appointments assigned to you yet.</div>
+        {% endif %}
+      </div>
+      <div class="mb-3">
+        <label for="test_name" class="form-label">Test Name</label>
+        <input type="text" name="test_name" class="form-control">
+      </div>
+      <div class="mb-3">
+        <label for="test_reason" class="form-label">Reason</label>
+        <textarea name="test_reason" class="form-control"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Submit Test</button>
+    </form>
+
+    <!-- Referral Form -->
+    <form method="POST" action="{{ url_for('doctor.refer_patient') }}" class="section" id="referral">
+      <h5 class="text-primary">📨 Referral Details</h5>
+      <div class="mb-3">
+        <label for="appointment_id" class="form-label">Select Appointment</label>
+        {% if appointments %}
+          <select name="appointment_id" class="form-select" required>
+            {% for appt in appointments %}
+              <option value="{{ appt.id }}">#{{ appt.id }} - {{ appt.patient_name }}</option>
+            {% endfor %}
+          </select>
+        {% else %}
+          <div class="alert alert-warning">⚠️ No appointments assigned to you yet.</div>
+        {% endif %}
+      </div>
+      <div class="mb-3">
+        <label for="referred_to" class="form-label">Referred To</label>
+        <input type="text" name="referred_to" class="form-control">
+      </div>
+      <div class="mb-3">
+        <label for="referral_reason" class="form-label">Reason</label>
+        <textarea name="referral_reason" class="form-control"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Submit Referral</button>
+    </form>
+
+    <!-- Follow-Up Form -->
+    <form method="POST" action="{{ url_for('doctor.follow_up') }}" class="section" id="followup">
+      <h5 class="text-primary">📅 Follow-Up Plan</h5>
+      <div class="mb-3">
+        <label for="appointment_id" class="form-label">Select Appointment</label>
+        {% if appointments %}
+          <select name="appointment_id" class="form-select" required>
+            {% for appt in appointments %}
+              <option value="{{ appt.id }}">#{{ appt.id }} - {{ appt.patient_name }}</option>
+            {% endfor %}
+          </select>
+        {% else %}
+          <div class="alert alert-warning">⚠️ No appointments assigned to you yet.</div>
+        {% endif %}
+      </div>
+      <div class="mb-3">
+        <label for="follow_up_date" class="form-label">Follow-Up Date</label>
+        <input type="date" name="follow_up_date" class="form-control">
+      </div>
+      <div class="mb-3">
+        <label for="follow_up_notes" class="form-label">Notes</label>
+        <textarea name="follow_up_notes" class="form-control"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Schedule Follow-Up</button>
+    </form>
+
+    <!-- Prescription Table -->
+    <div class="mt-5">
+      <h4 class="fw-bold text-success mb-3">📋 Recent Prescriptions</h4>
+      {% if prescriptions %}
+        <div class="table-responsive">
+          <table class="table table-bordered table-striped table-hover">
+            <thead class="table-dark">
+              <tr>
+                <th>Patient ID</th>
+                <th>Patient</th>
+                <th>Doctor</th>
+                <th>Medication</th>
+                <th>Dosage</th>
+                <th>Duration</th>
+                <th>Notes</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in prescriptions %}
+              <tr>
+                <td>{{ p.patient_id }}</td>
+                <td>{{ p.patient_name }}</td>
+                <td>{{ p.doctor_name }}</td>
+                <td>{{ p.medication }}</td>
+                <td>{{ p.dosage }}</td>
+                <td>{{ p.duration }}</td>
+                <td>{{ p.notes }}</td>
+                <td>{{ p.created_at | datetime }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="alert alert-warning text-center">
+          ⚠️ No prescriptions yet at the moment.
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Test Recommendations Table -->
+    <div class="mt-5">
+      <h4 class="fw-bold text-primary mb-3">🧪 Test Recommendations</h4>
+      {% if recommendations %}
+        <div class="table-responsive">
+          <table class="table table-bordered table-striped table-hover">
+            <thead class="table-dark">
+              <tr>
+                <th>Patient</th>
+                <th>Test Name</th>
+                <th>Reason</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in recommendations %}
+              <tr>
+                <td>{{ r.patient_name }}</td>
+                <td>{{ r.test_name }}</td>
+                <td>{{ r.reason }}</td>
+                <td>{{ r.created_at | datetime }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="alert alert-info text-center">
+          ℹ️ No test recommendations at this time.
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Referrals Table -->
+    <div class="mt-5">
+      <h4 class="fw-bold text-primary mb-3">📨 Referrals</h4>
+      {% if referrals %}
+        <div class="table-responsive">
+          <table class="table table-bordered table-striped table-hover">
+            <thead class="table-dark">
+              <tr>
+                <th>Patient</th>
+                <th>Referred To</th>
+                <th>Reason</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in referrals %}
+              <tr>
+                <td>{{ r.patient_name }}</td>
+                <td>{{ r.referred_to }}</td>
+                <td>{{ r.reason }}</td>
+                <td>{{ r.created_at | datetime }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="alert alert-info text-center">
+          ℹ️ No referrals at the moment.
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Follow-Ups Table -->
+    <div class="mt-5">
+      <h4 class="fw-bold text-primary mb-3">📅 Scheduled Follow-Ups</h4>
+      {% if follow_ups %}
+        <div class="table-responsive">
+          <table class="table table-bordered table-striped table-hover">
+            <thead class="table-dark">
+              <tr>
+                <th>Patient</th>
+                <th>Follow-Up Date</th>
+                <th>Notes</th>
+                <th>Scheduled At</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for f in follow_ups %}
+              <tr>
+                <td>{{ f.patient_name }}</td>
+                <td>{{ f.follow_up_date }}</td>
+                <td>{{ f.notes }}</td>
+                <td>{{ f.created_at | datetime }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="alert alert-info text-center">
+          ℹ️ No follow-ups set currently.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <script>
+    function toggleSection(value) {
+      document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+      });
+      if (value) {
+        document.getElementById(value).classList.add('active');
+      }
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

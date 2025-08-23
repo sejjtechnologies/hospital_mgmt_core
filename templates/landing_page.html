@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hospital Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .background-wrapper {
+            background-image: url('{{ url_for("static", filename="images/image3.png") }}');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            padding-top: 60px; /* ensures space below navbar */
+        }
+
+        .btn-green {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            box-shadow: 0 0 8px rgba(40, 167, 69, 0.4);
+            text-shadow: 0 0 4px rgba(255, 255, 255, 0.8); /* shiny white text */
+        }
+
+        .btn-green:hover {
+            background: linear-gradient(135deg, #218838, #17a2b8);
+            box-shadow: 0 0 10px rgba(33, 136, 56, 0.6);
+            color: white;
+            text-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+        }
+
+        .navbar-brand {
+            font-size: 1.8rem;
+            color: #FFD700 !important; /* gold */
+            text-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
+        }
+    </style>
+</head>
+<body>
+
+<!-- Black Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="#">🏥 Sejj-HMS </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarRoles" aria-controls="navbarRoles" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarRoles">
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                <li class="nav-item"><a class="btn btn-green me-2" href="/receptionist">Receptionist</a></li>
+                <li class="nav-item"><a class="btn btn-green me-2" href="/doctor">Doctor</a></li>
+                <li class="nav-item"><a class="btn btn-green me-2" href="/pharmacist">Pharmacist</a></li>
+                <li class="nav-item"><a class="btn btn-green me-2" href="/accountant">Accountant</a></li>
+                <li class="nav-item"><a class="btn btn-green" href="/admin">Admin</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Background Section -->
+<div class="background-wrapper">
+    <!-- Welcome Section -->
+    <div class="container mt-5 text-center">
+        <h1 class="display-5 fw-bold">Welcome to the Hospital Management System</h1>
+        <p class="lead">Choose your role to proceed</p>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Registered Patients</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f0f2f5;
+    }
+    .table-container {
+      max-width: 95%;
+      margin: auto;
+      position: relative;
+    }
+    th {
+      background-color: #198754;
+      color: white;
+      font-size: 0.75rem;
+    }
+    .table th, .table td {
+      vertical-align: middle;
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
+    .back-button {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      z-index: 1000;
+    }
+    .back-button button {
+      background-color: #0d6efd;
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      font-weight: bold;
+      border-radius: 4px;
+    }
+    .back-button button:hover {
+      background-color: #0b5ed7;
+    }
+    .toast-container {
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1055;
+    }
+    .inline-form {
+      display: inline;
+    }
+  </style>
+</head>
+<body>
+
+<div class="back-button">
+  <button onclick="history.back()">Back</button>
+</div>
+
+<div class="container mt-5 table-container">
+  <h2 class="text-center fw-bold mb-4">📋 Registered Patients</h2>
+
+  <!-- Toast Confirmation -->
+  <div class="toast-container">
+    <div id="deleteToast" class="toast align-items-center text-bg-light border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex justify-content-between align-items-center p-3">
+        <div class="me-3">Are you sure you want to delete this patient?</div>
+        <div>
+          <button type="button" class="btn btn-sm btn-danger me-2" onclick="proceedDelete()">Yes</button>
+          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="toast">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if patients %}
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle">
+      <thead class="table-success">
+        <tr>
+          <th>ID</th>
+          <th>First<br>Name</th>
+          <th>Last<br>Name</th>
+          <th>Gender</th>
+          <th>Date of<br>Birth</th>
+          <th>Age</th>
+          <th>Phone</th>
+          <th>Email</th>
+          <th>National<br>ID</th>
+          <th>Marital<br>Status</th>
+          <th>Next of<br>Kin</th>
+          <th>Next of Kin<br>Contact</th>
+          <th>Emergency<br>Contact</th>
+          <th>Medical<br>History</th>
+          <th>Allergies</th>
+          <th>Blood<br>Type</th>
+          <th>Insurance<br>Provider</th>
+          <th>Insurance<br>Number</th>
+          <th>Referral<br>Source</th>
+          <th>Existing<br>Conditions</th>
+          <th>Cell</th>
+          <th>Village</th>
+          <th>Subcounty</th>
+          <th>District</th>
+          <th>Nationality</th>
+          <th>Patient<br>Type</th>
+          <th>Reg<br>Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in patients %}
+        <tr>
+          <td>{{ p.id }}</td>
+          <td>{{ p.first_name }}</td>
+          <td>{{ p.last_name }}</td>
+          <td>{{ p.gender }}</td>
+          <td>{{ p.date_of_birth }}</td>
+          <td>{{ p.age or '—' }}</td>
+          <td>{{ p.phone }}</td>
+          <td>{{ p.email or '—' }}</td>
+          <td>{{ p.national_id or '—' }}</td>
+          <td>{{ p.marital_status or '—' }}</td>
+          <td>{{ p.next_of_kin or '—' }}</td>
+          <td>{{ p.next_of_kin_contact or '—' }}</td>
+          <td>{{ p.emergency_contact or '—' }}</td>
+          <td>{{ p.medical_history or '—' }}</td>
+          <td>{{ p.allergies or '—' }}</td>
+          <td>{{ p.blood_type or '—' }}</td>
+          <td>{{ p.insurance_provider or '—' }}</td>
+          <td>{{ p.insurance_number or '—' }}</td>
+          <td>{{ p.referral_source or '—' }}</td>
+          <td>{{ p.existing_conditions or '—' }}</td>
+          <td>{{ p.cell or '—' }}</td>
+          <td>{{ p.village or '—' }}</td>
+          <td>{{ p.subcounty or '—' }}</td>
+          <td>{{ p.district or '—' }}</td>
+          <td>{{ p.nationality or '—' }}</td>
+          <td>{{ p.patient_type }}</td>
+          <td>{{ p.reg_date or '—' }}</td>
+          <td>
+            <form id="deleteForm{{ p.id }}" action="/receptionist/delete_patient/{{ p.id }}" method="POST" class="inline-form">
+              <button type="button" class="btn btn-sm btn-danger" onclick="confirmDelete('{{ p.id }}')">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="alert alert-warning text-center">
+      No patients have been registered yet.
+    </div>
+  {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  let pendingDeleteId = null;
+
+  function confirmDelete(id) {
+    pendingDeleteId = id;
+    const toastEl = document.getElementById('deleteToast');
+    const toast = new bootstrap.Toast(toastEl);
+    toast.show();
+  }
+
+  function proceedDelete() {
+    if (pendingDeleteId) {
+      document.getElementById('deleteForm' + pendingDeleteId).submit();
+    }
+  }
+</script>
+</body>
+</html>

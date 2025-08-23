@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pharmacist Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .welcome-box {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .welcome-box img {
+            width: 45px;
+            height: 45px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .welcome-box .initials {
+            width: 45px;
+            height: 45px;
+            background-color: #6c757d;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .welcome-box .info {
+            font-size: 0.95rem;
+            text-align: right;
+        }
+
+        .welcome-box .info .name {
+            font-weight: bold;
+        }
+
+        .welcome-box .info .role {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="#">🏥 HMS - Pharmacist</a>
+        <div class="collapse navbar-collapse justify-content-end">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="btn btn-outline-light" href="{{ url_for('pharmacist.pharmacist_logout') }}">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Welcome Box -->
+{% if session.get('first_name') and session.get('role') %}
+<div class="container-fluid">
+    <div class="welcome-box pe-4">
+        {% if session.get('profile_pic') %}
+            <img src="{{ url_for('static', filename='uploads/' ~ session['profile_pic']) }}" alt="Profile Picture">
+        {% else %}
+            <div class="initials">{{ session['first_name'][0]|upper }}</div>
+        {% endif %}
+        <div class="info">
+            <div class="name">Welcome {{ session['first_name'] }}</div>
+            <div class="role">{{ session['role'] }}</div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="container mt-5 text-center">
+    <h2 class="fw-bold">Welcome, Pharmacist</h2>
+    <p class="lead">Manage inventory and fulfill prescriptions.</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

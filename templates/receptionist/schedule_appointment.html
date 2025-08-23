@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Appointment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            position: relative;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .back-button {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background-color: #0077cc;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: background-color 0.3s;
+        }
+        .back-button:hover {
+            background-color: #005fa3;
+        }
+        .header h2 {
+            color: #0077cc;
+            margin: 0;
+            font-size: 24px;
+        }
+        .container {
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+        .form-section {
+            flex: 1;
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 8px;
+            min-width: 300px;
+        }
+        .table-section {
+            flex: 1.2;
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 8px;
+            max-height: 700px;
+            overflow-y: auto;
+            min-width: 300px;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 13px;
+        }
+        input, select {
+            width: 100%;
+            padding: 6px;
+            margin-top: 5px;
+            box-sizing: border-box;
+            font-size: 13px;
+            appearance: none;
+        }
+        button {
+            margin-top: 20px;
+            padding: 8px 16px;
+            background-color: #0077cc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        button:hover {
+            background-color: #005fa3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 4px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        h3 {
+            margin-top: 0;
+        }
+        .delete-btn {
+            background-color: #cc0000;
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .delete-btn:hover {
+            background-color: #a00000;
+        }
+        .no-margin {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<button class="back-button" onclick="history.back()">Back</button>
+
+<div class="header">
+    <h2>📅 Schedule an Appointment</h2>
+</div>
+
+<div class="container">
+    <div class="form-section">
+        <form id="appointmentForm" action="{{ url_for('receptionist.create_appointment') }}" method="POST">
+            <input type="hidden" name="created_by" value="{{ session['user_id'] }}">
+
+            <label for="patient_selector">Select Patient</label>
+            <select id="patient_selector" required>
+                <option value="">-- Choose a Patient --</option>
+                {% for p in patients %}
+                    <option value="{{ p['id'] }}" data-first="{{ p['first_name'] }}" data-last="{{ p['last_name'] }}">
+                        {{ p['first_name'] }} {{ p['last_name'] }} (ID: {{ p['id'] }})
+                    </option>
+                {% endfor %}
+            </select>
+
+            <label for="patient_id">Patient ID</label>
+            <input type="text" id="patient_id" name="patient_id" readonly required>
+
+            <label for="patient_first_name">First Name</label>
+            <input type="text" id="patient_first_name" name="patient_first_name" readonly>
+
+            <label for="patient_last_name">Last Name</label>
+            <input type="text" id="patient_last_name" name="patient_last_name" readonly>
+
+            <label for="doctor_id">Select Doctor</label>
+            <select id="doctor_id" name="doctor_id" required>
+                <option value="">-- Choose a Doctor --</option>
+                {% for doc in doctors %}
+                    <option value="{{ doc['id'] }}">
+                        Dr. {{ doc['first_name'] }} {{ doc['last_name'] }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <label for="appointment_date">Date</label>
+            <input type="date" id="appointment_date" name="appointment_date" required>
+
+            <label for="appointment_time">Time (e.g., 2:09 PM)</label>
+            <input type="text" id="appointment_time" name="appointment_time" placeholder="hh:mm AM/PM" required>
+
+            <label for="appointment_type">Appointment Type</label>
+            <select id="appointment_type" name="appointment_type" required>
+                <option value="">-- Select Type --</option>
+                <option value="Consultation">Consultation</option>
+                <option value="Follow-up">Follow-up</option>
+                <option value="Routine Checkup">Routine Checkup</option>
+                <option value="Emergency">Emergency</option>
+                <option value="Referral">online</option>
+            </select>
+                        <label for="reason">Reason</label>
+            <select id="reason" name="reason" required>
+                <option value="">-- Select Reason --</option>
+                <option value="Fever and chills">Fever and chills</option>
+                <option value="Headache">Headache</option>
+                <option value="Chest pain">Chest pain</option>
+                <option value="Back pain">Back pain</option>
+                <option value="Skin rash">Skin rash</option>
+                <option value="Medication refill">Medication refill</option>
+                <option value="Lab results review">Lab results review</option>
+            </select>
+
+            <input type="hidden" name="status" value="Scheduled">
+
+            <button type="submit">Schedule Appointment</button>
+        </form>
+    </div>
+    <div class="table-section">
+        <h3>📋 Scheduled Appointments</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Type</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Created By</th>
+                    <th>Created At</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appt in appointments %}
+                <tr>
+                    <td>{{ appt['id'] }}</td>
+                    <td>{{ appt['patient_first_name'] }} {{ appt['patient_last_name'] }}</td>
+                    <td>{{ appt['doctor_first_name'] }} {{ appt['doctor_last_name'] }}</td>
+                    <td>{{ appt['appointment_date'] }}</td>
+                    <td>{{ appt['formatted_time'] }}</td>
+                    <td>{{ appt['appointment_type'] }}</td>
+                    <td>{{ appt['reason'] }}</td>
+                    <td>{{ appt['status'] }}</td>
+                    <td>{{ appt['created_by'] }}</td>
+                    <td>{{ appt['formatted_created'] }}</td>
+                    <td>
+                        <form action="{{ url_for('receptionist.delete_appointment', appointment_id=appt['id']) }}" method="POST" class="no-margin">
+                            <button type="submit" class="delete-btn">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const patientSelector = document.getElementById('patient_selector');
+    const patientIdInput = document.getElementById('patient_id');
+    const patientFirstNameInput = document.getElementById('patient_first_name');
+    const patientLastNameInput = document.getElementById('patient_last_name');
+
+    patientSelector.addEventListener('change', function () {
+        const selectedOption = this.options[this.selectedIndex];
+        const patientId = selectedOption.value;
+        const firstName = selectedOption.getAttribute('data-first');
+        const lastName = selectedOption.getAttribute('data-last');
+
+        patientIdInput.value = patientId;
+        patientFirstNameInput.value = firstName;
+        patientLastNameInput.value = lastName;
+    });
+
+    function validateTime12Hour(timeStr) {
+        const pattern = /^(0?[1-9]|1[0-2]):[0-5][0-9]\s?(AM|PM)$/i;
+        return pattern.test(timeStr);
+    }
+
+    function formatCreatedAt() {
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const hour12 = ((hours + 11) % 12 + 1).toString().padStart(2, '0');
+        const date = now.toISOString().slice(0, 10);
+        return `${date} ${hour12}:${minutes} ${ampm}`;
+    }
+
+    document.getElementById('appointmentForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const timeInput = document.getElementById('appointment_time').value.trim();
+        if (!validateTime12Hour(timeInput)) {
+            alert('❌ Invalid time format. Use hh:mm AM/PM');
+            return;
+        }
+
+        const formData = new FormData(this);
+
+        fetch(this.action, {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.message) {
+                const patientName = patientFirstNameInput.value + ' ' + patientLastNameInput.value;
+                const doctorSelect = document.getElementById('doctor_id');
+                const doctorName = doctorSelect.options[doctorSelect.selectedIndex].text;
+                const date = document.getElementById('appointment_date').value;
+                const time = document.getElementById('appointment_time').value;
+                const type = document.getElementById('appointment_type').value;
+                const reason = document.getElementById('reason').value;
+                const status = 'Scheduled';
+                const createdBy = formData.get('created_by');
+                const createdAt = formatCreatedAt();
+
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td>New</td>
+                    <td>${patientName}</td>
+                    <td>${doctorName}</td>
+                    <td>${date}</td>
+                    <td>${time}</td>
+                    <td>${type}</td>
+                    <td>${reason}</td>
+                    <td>${status}</td>
+                    <td>${createdBy}</td>
+                    <td>${createdAt}</td>
+                    <td>
+                        <form action="/receptionist/appointments/delete/new" method="POST" style="margin:0;">
+                            <button type="submit" class="delete-btn">Delete</button>
+                        </form>
+                    </td>
+                `;
+                document.querySelector('table tbody').prepend(newRow);
+
+                document.getElementById('appointmentForm').reset();
+                patientIdInput.value = '';
+                patientFirstNameInput.value = '';
+                patientLastNameInput.value = '';
+            } else {
+                alert('❌ Failed to schedule appointment.');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('❌ Error occurred while scheduling.');
+        });
+    });
+</script>
+
+</body>
+</html>

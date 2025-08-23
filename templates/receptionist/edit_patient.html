@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Edit Patient</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .form-section {
+      margin-bottom: 30px;
+    }
+    .form-section h5 {
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+    .patient-container {
+      max-width: 720px;
+    }
+    .back-button {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1050;
+      padding: 8px;
+    }
+    .back-button button {
+      background-color: #0d6efd;
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      font-weight: bold;
+      border-radius: 0 0 4px 0;
+    }
+    .back-button button:hover {
+      background-color: #0b5ed7;
+    }
+  </style>
+</head>
+<body>
+
+<div class="back-button">
+  <button onclick="history.back()">Back</button>
+</div>
+
+<div class="container mt-5 patient-container">
+  <h2 class="text-center fw-bold mb-4">✏️ Edit Patient</h2>
+
+  <form method="POST" action="{{ url_for('receptionist.update_patient', patient_id=patient.id) }}">
+    <!-- Personal Information -->
+    <div class="form-section">
+      <h5>👤 Personal Information</h5>
+      <div class="row g-2">
+        <div class="col-md-6">
+          <label for="first_name" class="form-label">First Name</label>
+          <input type="text" id="first_name" class="form-control" name="first_name" value="{{ patient.first_name }}" required>
+        </div>
+        <div class="col-md-6">
+          <label for="last_name" class="form-label">Last Name</label>
+          <input type="text" id="last_name" class="form-control" name="last_name" value="{{ patient.last_name }}" required>
+        </div>
+        <div class="col-md-6">
+          <label for="gender" class="form-label">Gender</label>
+          <select id="gender" class="form-select" name="gender" required>
+            <option value="">Gender</option>
+            <option value="Male" {% if patient.gender == 'Male' %}selected{% endif %}>Male</option>
+            <option value="Female" {% if patient.gender == 'Female' %}selected{% endif %}>Female</option>
+            <option value="Other" {% if patient.gender == 'Other' %}selected{% endif %}>Other</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label for="date_of_birth" class="form-label">Date of Birth</label>
+          <input type="date" id="date_of_birth" class="form-control" name="date_of_birth" value="{{ patient.date_of_birth }}" required>
+        </div>
+        <div class="col-md-6">
+          <label for="age" class="form-label">Age</label>
+          <input type="number" id="age" class="form-control" name="age" value="{{ patient.age }}">
+        </div>
+        <div class="col-md-6">
+          <label for="national_id" class="form-label">National ID</label>
+          <input type="text" id="national_id" class="form-control" name="national_id" value="{{ patient.national_id }}">
+        </div>
+        <div class="col-md-6">
+          <label for="marital_status" class="form-label">Marital Status</label>
+          <select id="marital_status" class="form-select" name="marital_status">
+            <option value="">Marital Status</option>
+            <option value="Single" {% if patient.marital_status == 'Single' %}selected{% endif %}>Single</option>
+            <option value="Married" {% if patient.marital_status == 'Married' %}selected{% endif %}>Married</option>
+            <option value="Divorced" {% if patient.marital_status == 'Divorced' %}selected{% endif %}>Divorced</option>
+            <option value="Widowed" {% if patient.marital_status == 'Widowed' %}selected{% endif %}>Widowed</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Details -->
+    <div class="form-section">
+      <h5>📞 Contact Details</h5>
+      <div class="row g-2">
+        <div class="col-md-6">
+          <label for="phone" class="form-label">Phone</label>
+          <input type="tel" id="phone" class="form-control" name="phone" value="{{ patient.phone }}" required>
+        </div>
+        <div class="col-md-6">
+          <label for="email" class="form-label">Email</label>
+          <input type="email" id="email" class="form-control" name="email" value="{{ patient.email }}">
+        </div>
+        <div class="col-md-6">
+          <label for="next_of_kin" class="form-label">Next of Kin</label>
+          <input type="text" id="next_of_kin" class="form-control" name="next_of_kin" value="{{ patient.next_of_kin }}">
+        </div>
+        <div class="col-md-6">
+          <label for="next_of_kin_contact" class="form-label">Next of Kin Contact</label>
+          <input type="tel" id="next_of_kin_contact" class="form-control" name="next_of_kin_contact" value="{{ patient.next_of_kin_contact }}">
+        </div>
+        <div class="col-md-12">
+          <label for="emergency_contact" class="form-label">Emergency Contact</label>
+          <input type="text" id="emergency_contact" class="form-control" name="emergency_contact" value="{{ patient.emergency_contact }}">
+        </div>
+      </div>
+    </div>
+
+    <!-- Location Details -->
+    <div class="form-section">
+      <h5>📍 Location Details</h5>
+      <div class="row g-2">
+        <div class="col-md-4">
+          <label for="cell" class="form-label">Cell</label>
+          <input type="text" id="cell" class="form-control" name="cell" value="{{ patient.cell }}" required>
+        </div>
+        <div class="col-md-4">
+          <label for="village" class="form-label">Village</label>
+          <input type="text" id="village" class="form-control" name="village" value="{{ patient.village }}" required>
+        </div>
+        <div class="col-md-4">
+          <label for="subcounty" class="form-label">Subcounty</label>
+          <input type="text" id="subcounty" class="form-control" name="subcounty" value="{{ patient.subcounty }}" required>
+        </div>
+        <div class="col-md-6">
+          <label for="district" class="form-label">District</label>
+          <input type="text" id="district" class="form-control" name="district" value="{{ patient.district }}" required>
+        </div>
+        <div class="col-md-6">
+          <label for="nationality" class="form-label">Nationality</label>
+          <input type="text" id="nationality" class="form-control" name="nationality" value="{{ patient.nationality }}" required>
+        </div>
+      </div>
+    </div>
+
+    <!-- Medical & Administrative Info -->
+    <div class="form-section">
+      <h5>🏥 Medical & Administrative Info</h5>
+      <div class="row g-2">
+        <div class="col-md-6">
+          <label for="patient_type" class="form-label">Patient Type</label>
+          <select id="patient_type" class="form-select" name="patient_type" required>
+            <option value="">Patient Type</option>
+                <option value="Outpatient" {% if patient.patient_type == 'Outpatient' %}selected{% endif %}>Outpatient</option>
+                <option value="Inpatient" {% if patient.patient_type == 'Inpatient' %}selected{% endif %}>Inpatient</option>
+                <option value="Emergency" {% if patient.patient_type == 'Emergency' %}selected{% endif %}>Emergency</option>
+            </div>
+        <div class="col-md-6">
+          <label for="insurance_provider" class="form-label">Insurance Provider</label>
+          <input type="text" id="insurance_provider" class="form-control" name="insurance_provider" value="{{ patient.insurance_provider }}" placeholder="Enter insurance provider" title="Insurance Provider">
+        </div>
+        <div class="col-md-6">
+          <label for="insurance_number" class="form-label">Insurance Number</label>
+          <input type="text" id="insurance_number" class="form-control" name="insurance_number" value="{{ patient.insurance_number }}">
+        </div>
+        <div class="col-md-6">
+          <label for="referral_source" class="form-label">Referral Source</label>
+          <input type="text" id="referral_source" class="form-control" name="referral_source" value="{{ patient.referral_source }}">
+        </div>
+        <div class="col-md-6">
+          <label for="blood_type" class="form-label">Blood Type</label>
+          <select id="blood_type" class="form-select" name="blood_type">
+            <option value="">Select Blood Type</option>
+            <option value="A+" {% if patient.blood_type == 'A+' %}selected{% endif %}>A+</option>
+            <option value="A−" {% if patient.blood_type == 'A−' %}selected{% endif %}>A−</option>
+            <option value="B+" {% if patient.blood_type == 'B+' %}selected{% endif %}>B+</option>
+            <option value="B−" {% if patient.blood_type == 'B−' %}selected{% endif %}>B−</option>
+            <option value="AB+" {% if patient.blood_type == 'AB+' %}selected{% endif %}>AB+</option>
+            <option value="AB−" {% if patient.blood_type == 'AB−' %}selected{% endif %}>AB−</option>
+            <option value="O+" {% if patient.blood_type == 'O+' %}selected{% endif %}>O+</option>
+            <option value="O−" {% if patient.blood_type == 'O−' %}selected{% endif %}>O−</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label for="registration_date" class="form-label">Registration Date</label>
+          <input type="date" id="registration_date" class="form-control" name="registration_date" value="{{ patient.registration_date }}">
+        </div>
+        <div class="col-md-12">
+          <label for="medical_history" class="form-label">Medical History</label>
+          <textarea id="medical_history" class="form-control" rows="2" name="medical_history">{{ patient.medical_history }}</textarea>
+        </div>
+        <div class="col-md-12">
+          <label for="allergies" class="form-label">Allergies</label>
+          <textarea id="allergies" class="form-control" rows="2" name="allergies">{{ patient.allergies }}</textarea>
+        </div>
+        <div class="col-md-12">
+          <label for="existing_conditions" class="form-label">Existing Conditions</label>
+          <textarea id="existing_conditions" class="form-control" rows="2" name="existing_conditions">{{ patient.existing_conditions }}</textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="text-center mb-5">
+      <button type="submit" class="btn btn-warning fw-bold px-4">Save Changes</button>
+    </div>
+  </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
