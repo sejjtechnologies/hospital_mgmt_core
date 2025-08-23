@@ -16,6 +16,7 @@ def landing_page():
 
 def verify_admin_password(admin_id, password):
     conn = get_db_connection()
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     cursor.execute("SELECT password, first_name, last_name FROM admin_users WHERE id = ?", (admin_id,))
     admin = cursor.fetchone()
@@ -24,20 +25,34 @@ def verify_admin_password(admin_id, password):
         return admin
     return None
 
+def get_admin_by_id(admin_id):
+    conn = get_db_connection()
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute("SELECT first_name, last_name FROM admin_users WHERE id = ?", (admin_id,))
+    admin = cursor.fetchone()
+    conn.close()
+    return admin
+
 @admin_bp.route('/login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
-        email = request.form['email']
+        email = request.form['email'].strip().lower()
         password = request.form['password']
+        print("🔐 Login attempt:", repr(email), repr(password))
 
         conn = get_db_connection()
+        conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
-        cursor.execute("SELECT id, password FROM admin_users WHERE email = ?", (email,))
+        cursor.execute("SELECT id, password, first_name, last_name FROM admin_users WHERE email = ?", (email,))
         user = cursor.fetchone()
         conn.close()
+        print("🔍 DB user:", user)
 
         if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
             session['admin_id'] = user['id']
+            session['first_name'] = user['first_name']
+            session['last_name'] = user['last_name']
             return redirect(url_for('admin.admin_dashboard'))
         else:
             flash('Invalid credentials. Please try again.', 'danger')
@@ -53,7 +68,24 @@ def admin_dashboard():
 
 @admin_bp.route('/logout')
 def admin_logout():
-    session.pop('admin_id', None)
+    admin_id = session.get('admin_id')
+    if admin_id:
+        admin = get_admin_by_id(admin_id)
+        if admin:
+            log_audit(
+                actor_id=admin_id,
+                actor_role="ADMIN",
+                first_name=admin['first_name'],
+                last_name=admin['last_name'],
+                action="logout",
+                details="Admin logged out",
+                status="success",
+                ip_address=request.remote_addr
+            )
+    else:
+        print("⚠️ Skipping audit: admin_id missing")
+
+    session.clear()
     flash('You have been logged out.', 'info')
     return redirect(url_for('admin.admin_login'))
 
@@ -63,6 +95,7 @@ def create_user():
         return redirect(url_for('admin.admin_login'))
 
     conn = get_db_connection()
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
     cursor.execute("SELECT id, name FROM roles ORDER BY name ASC")
@@ -116,6 +149,7 @@ def edit_user(user_id):
         return redirect(url_for('admin.admin_login'))
 
     conn = get_db_connection()
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
     cursor.execute("SELECT id, name FROM roles ORDER BY name ASC")
@@ -128,49 +162,6 @@ def edit_user(user_id):
         WHERE users.id = ?
     ''', (user_id,))
     user = cursor.fetchone()
-
-    if request.method == 'POST':
-        first_name = request.form['first_name']
-        last_name = request.form['last_name']
-        email = request.form['email']
-        new_role_id = request.form['role_id']
-        old_role_id = user['role_id']
-
-        profile_pic = request.files['profile_pic']
-        filename = user['profile_pic']
-        if profile_pic and profile_pic.filename != '':
-            filename = f"{first_name}_{last_name}_{int(datetime.now().timestamp())}.png"
-            filepath = os.path.join(UPLOAD_FOLDER, filename)
-            profile_pic.save(filepath)
-
-        cursor.execute('''
-            UPDATE users SET first_name = ?, last_name = ?, email = ?, role_id = ?, profile_pic = ?
-            WHERE id = ?
-        ''', (first_name, last_name, email, new_role_id, filename, user_id))
-        conn.commit()
-
-        if str(new_role_id) != str(old_role_id):
-            cursor.execute("SELECT name FROM roles WHERE id = ?", (new_role_id,))
-            new_role = cursor.fetchone()['name']
-            cursor.execute("SELECT first_name, last_name FROM admin_users WHERE id = ?", (session['admin_id'],))
-            admin = cursor.fetchone()
-
-            log_audit(
-                actor_id=session['admin_id'],
-                actor_role="ADMIN",
-                first_name=admin['first_name'],
-                last_name=admin['last_name'],
-                action="role_change",
-                details=f"Changed role of user {email} to {new_role}",
-                status="success",
-                ip_address=request.remote_addr
-            )
-
-        flash('User profile updated.', 'success')
-        return redirect(url_for('admin.edit_user', user_id=user_id))
-
-    conn.close()
-    return render_template('admin/edit_user.html', user=user, roles=roles)
 
 @admin_bp.route('/reset-password/<int:user_id>', methods=['POST'])
 def reset_password(user_id):
@@ -194,6 +185,7 @@ def reset_password(user_id):
     hashed_pw = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
     conn = get_db_connection()
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     cursor.execute("SELECT email FROM users WHERE id = ?", (user_id,))
     target_user = cursor.fetchone()
@@ -201,16 +193,19 @@ def reset_password(user_id):
     conn.commit()
     conn.close()
 
-    log_audit(
-        actor_id=admin_id,
-        actor_role="ADMIN",
-        first_name=admin['first_name'],
-        last_name=admin['last_name'],
-        action="password_reset",
-        details=f"Password reset for user {target_user['email']}",
-        status="success",
-        ip_address=request.remote_addr
-    )
+    if admin_id and target_user:
+        log_audit(
+            actor_id=admin_id,
+            actor_role="ADMIN",
+            first_name=admin['first_name'],
+            last_name=admin['last_name'],
+            action="password_reset",
+            details=f"Password reset for user {target_user['email']}",
+            status="success",
+            ip_address=request.remote_addr
+        )
+    else:
+        print("⚠️ Skipping audit: missing admin or target user")
 
     flash("Password reset successful.", "success")
     return redirect(url_for('admin.edit_user', user_id=user_id))

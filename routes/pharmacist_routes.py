@@ -1,3 +1,4 @@
+import sqlite3
 from flask import Blueprint, render_template, session, flash, redirect, url_for, request
 from utils.audit_loggery import log_audit
 from utils.db import get_db_connection  # ✅ Centralized connection

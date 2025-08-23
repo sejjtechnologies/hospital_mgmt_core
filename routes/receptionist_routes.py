@@ -1,3 +1,4 @@
+import sqlite3
 from flask import Blueprint, render_template, session, flash, redirect, url_for, request, jsonify
 from datetime import datetime
 from utils.audit_loggery import log_audit
@@ -31,6 +32,8 @@ def receptionist_dashboard():
 
 @receptionist_bp.route('/logout')
 def receptionist_logout():
+    print("🔍 Logout session:", dict(session))  # Debug session context
+
     user_id = session.get('user_id')
     role = session.get('role', 'Unknown')
     ip = request.remote_addr
@@ -45,16 +48,19 @@ def receptionist_logout():
         if result:
             first_name, last_name = result
 
-    log_audit(
-        actor_id=user_id,
-        actor_role=role,
-        first_name=first_name,
-        last_name=last_name,
-        action="logout",
-        details="Receptionist logged out",
-        status="success",
-        ip_address=ip
-    )
+    if user_id:  # ✅ Defensive check to avoid IntegrityError
+        log_audit(
+            actor_id=user_id,
+            actor_role=role,
+            first_name=first_name,
+            last_name=last_name,
+            action="logout",
+            details="Receptionist logged out",
+            status="success",
+            ip_address=ip
+        )
+    else:
+        print("⚠️ Skipping audit log: user_id is missing")
 
     session.clear()
     flash('You have been logged out.', 'info')
@@ -106,16 +112,17 @@ def register_patient():
         conn.commit()
         conn.close()
 
-        log_audit(
-            actor_id=user_id,
-            actor_role=role,
-            first_name=session.get('first_name', 'Unknown'),
-            last_name=session.get('last_name', 'Unknown'),
-            action="register_patient",
-            details=f"Registered patient: {data.get('first_name')} {data.get('last_name')}",
-            status="success",
-            ip_address=request.remote_addr
-        )
+        if user_id:
+            log_audit(
+                actor_id=user_id,
+                actor_role=role,
+                first_name=session.get('first_name', 'Unknown'),
+                last_name=session.get('last_name', 'Unknown'),
+                action="register_patient",
+                details=f"Registered patient: {data.get('first_name')} {data.get('last_name')}",
+                status="success",
+                ip_address=request.remote_addr
+            )
 
         flash("✅ Patient registered successfully!", "success")
         return redirect(url_for('receptionist.view_registered_patients'))
@@ -169,16 +176,17 @@ def delete_patient(patient_id):
         conn.commit()
         conn.close()
 
-        log_audit(
-            actor_id=user_id,
-            actor_role="RECEPTIONIST",
-            first_name=session.get('first_name', 'Unknown'),
-            last_name=session.get('last_name', 'Unknown'),
-            action="delete_patient",
-            details=f"Deleted patient ID {patient_id}",
-            status="success",
-            ip_address=ip
-        )
+        if user_id:
+            log_audit(
+                actor_id=user_id,
+                actor_role="RECEPTIONIST",
+                first_name=session.get('first_name', 'Unknown'),
+                last_name=session.get('last_name', 'Unknown'),
+                action="delete_patient",
+                details=f"Deleted patient ID {patient_id}",
+                status="success",
+                ip_address=ip
+            )
 
         flash("🗑️ Patient deleted successfully.", "info")
         return redirect(url_for('receptionist.view_registered_patients'))
@@ -206,6 +214,8 @@ def edit_patient(patient_id):
     if not patient:
         flash("Patient not found.", "warning")
         return redirect(url_for('receptionist.view_registered_patients'))
+
+    return render_template('receptionist/edit_patient.html', patient=dict(patient))
 
     return render_template('receptionist/edit_patient.html', patient=patient)
 @receptionist_bp.route('/update_patient/<int:patient_id>', methods=['POST'])
