@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, session, flash, redirect, url_for, request, jsonify
-import sqlite3
 from datetime import datetime
 from utils.audit_loggery import log_audit
+from utils.db import get_db_connection  # ✅ Centralized connection
 
 receptionist_bp = Blueprint('receptionist', __name__, url_prefix='/receptionist')
 
@@ -16,7 +16,7 @@ def receptionist_dashboard():
         return redirect(url_for('auth.role_login'))
 
     if not session.get('first_name'):
-        conn = sqlite3.connect('hospital.db')
+        conn = get_db_connection()
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute("SELECT first_name, last_name FROM users WHERE id = ?", (user_id,))
@@ -37,7 +37,7 @@ def receptionist_logout():
 
     first_name = last_name = "Unknown"
     if user_id:
-        conn = sqlite3.connect('hospital.db')
+        conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT first_name, last_name FROM users WHERE id = ?", (user_id,))
         result = cursor.fetchone()
@@ -84,7 +84,7 @@ def register_patient():
     registration_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     try:
-        conn = sqlite3.connect("hospital.db")
+        conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("""
             INSERT INTO patients (
@@ -133,7 +133,7 @@ def view_registered_patients():
         flash('Access denied. Please log in as a receptionist.', 'warning')
         return redirect(url_for('auth.role_login'))
 
-    conn = sqlite3.connect("hospital.db")
+    conn = get_db_connection()
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM patients ORDER BY id ASC")
@@ -163,7 +163,7 @@ def delete_patient(patient_id):
         return redirect(url_for('auth.role_login'))
 
     try:
-        conn = sqlite3.connect("hospital.db")
+        conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("DELETE FROM patients WHERE id = ?", (patient_id,))
         conn.commit()
@@ -196,7 +196,7 @@ def edit_patient(patient_id):
         flash('Access denied.', 'danger')
         return redirect(url_for('auth.role_login'))
 
-    conn = sqlite3.connect("hospital.db")
+    conn = get_db_connection()
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM patients WHERE id = ?", (patient_id,))
@@ -208,7 +208,6 @@ def edit_patient(patient_id):
         return redirect(url_for('receptionist.view_registered_patients'))
 
     return render_template('receptionist/edit_patient.html', patient=patient)
-
 @receptionist_bp.route('/update_patient/<int:patient_id>', methods=['POST'])
 def update_patient(patient_id):
     role = session.get('role', '').upper()
@@ -221,7 +220,8 @@ def update_patient(patient_id):
     data = {key: request.form.get(key) for key in request.form}
 
     try:
-        conn = sqlite3.connect("hospital.db")
+        from utils.db import get_db_connection  # ✅ Centralized connection
+        conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("""
             UPDATE patients SET
@@ -259,6 +259,7 @@ def update_patient(patient_id):
     except Exception as e:
         flash(f"Update failed: {str(e)}", "danger")
         return redirect(url_for('receptionist.edit_patient', patient_id=patient_id))
+
 def fetch_doctors(cursor):
     cursor.execute("SELECT id FROM roles WHERE name = 'Doctor'")
     role_row = cursor.fetchone()
@@ -300,7 +301,8 @@ def schedule_appointment():
         flash('Access denied. Please log in as a receptionist.', 'warning')
         return redirect(url_for('auth.role_login'))
 
-    conn = sqlite3.connect("hospital.db")
+    from utils.db import get_db_connection  # ✅ Centralized connection
+    conn = get_db_connection()
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     doctors = fetch_doctors(cursor)
@@ -351,7 +353,8 @@ def create_appointment():
             return jsonify({'error': f'Missing field: {field}'}), 400
 
     try:
-        conn = sqlite3.connect('hospital.db')
+        from utils.db import get_db_connection  # ✅ Centralized connection
+        conn = get_db_connection()
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
 
@@ -381,7 +384,6 @@ def create_appointment():
 
         conn.commit()
         conn.close()
-
         log_audit(
             actor_id=user_id,
             actor_role="RECEPTIONIST",
@@ -408,7 +410,8 @@ def delete_appointment(appointment_id):
         return redirect(url_for('auth.role_login'))
 
     try:
-        conn = sqlite3.connect('hospital.db')
+        from utils.db import get_db_connection  # ✅ Centralized connection
+        conn = get_db_connection()
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
 

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, session, flash, redirect, url_for, request
-import sqlite3
 from utils.audit_loggery import log_audit
+from utils.db import get_db_connection  # ✅ Centralized connection
 
 # Register blueprint with correct prefix
 pharmacist_bp = Blueprint('pharmacist', __name__, url_prefix='/pharmacist')
@@ -21,7 +21,7 @@ def pharmacist_dashboard():
 
     # Fetch user details if not already in session
     if not session.get('first_name') or not session.get('profile_pic'):
-        conn = sqlite3.connect('hospital.db')
+        conn = get_db_connection()
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute("SELECT first_name, last_name, profile_pic FROM users WHERE id = ?", (user_id,))
@@ -44,7 +44,7 @@ def pharmacist_logout():
     # Fetch user names for audit logging
     first_name = last_name = "Unknown"
     if user_id:
-        conn = sqlite3.connect('hospital.db')
+        conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT first_name, last_name FROM users WHERE id = ?", (user_id,))
         result = cursor.fetchone()

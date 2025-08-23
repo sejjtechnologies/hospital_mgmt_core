@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, session, flash, redirect, url_for, request
-import sqlite3
+from utils.db import get_db_connection  # ✅ Centralized DB connection
 from utils.audit_loggery import log_audit
 
 accountant_bp = Blueprint('accountant', __name__, url_prefix='/accountant')
@@ -28,7 +28,7 @@ def accountant_logout():
     # Fetch user names for audit logging
     first_name = last_name = "Unknown"
     if user_id:
-        conn = sqlite3.connect('hospital.db')
+        conn = get_db_connection()  # ✅ Use centralized connection
         cursor = conn.cursor()
         cursor.execute("SELECT first_name, last_name FROM users WHERE id = ?", (user_id,))
         result = cursor.fetchone()

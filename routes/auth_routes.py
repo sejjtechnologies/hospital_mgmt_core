@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-import sqlite3
 import bcrypt
 from utils.audit_loggery import log_audit
+from utils.db import get_db_connection  # ✅ Centralized connection
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -11,7 +11,7 @@ def role_login():
         email = request.form['email']
         password = request.form['password']
 
-        conn = sqlite3.connect('hospital.db')
+        conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute('''
             SELECT users.id, users.password, roles.name, users.first_name, users.last_name

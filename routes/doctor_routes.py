@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, session, flash, redirect, url_for, request
-import sqlite3
 from datetime import datetime
+import sqlite3
 from utils.audit_loggery import log_audit
+from utils.db import get_db_connection  # ✅ Centralized connection
 
 doctor_bp = Blueprint('doctor', __name__, url_prefix='/doctor')
 
@@ -17,7 +18,7 @@ def doctor_dashboard():
         return redirect(url_for('auth.role_login'))
 
     if not session.get('first_name') or not session.get('profile_pic'):
-        conn = sqlite3.connect('hospital.db')
+        conn = get_db_connection()
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute("SELECT first_name, last_name, profile_pic FROM users WHERE id = ?", (user_id,))
@@ -40,7 +41,7 @@ def doctor_appointments_and_scheduling():
         flash('Access denied. Please log in as a doctor.', 'warning')
         return redirect(url_for('auth.role_login'))
 
-    conn = sqlite3.connect('hospital.db')
+    conn = get_db_connection()
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     cursor.execute("""
@@ -98,7 +99,7 @@ def update_appointment(appointment_id):
         flash("Invalid time format. Please use hh:mm and select AM/PM.", "danger")
         return redirect(url_for('doctor.doctor_appointments_and_scheduling'))
 
-    conn = sqlite3.connect('hospital.db')
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
         UPDATE appointments
@@ -119,7 +120,7 @@ def doctor_logout():
 
     first_name = last_name = "Unknown"
     if user_id:
-        conn = sqlite3.connect('hospital.db')
+        conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT first_name, last_name FROM users WHERE id = ?", (user_id,))
         result = cursor.fetchone()
@@ -149,7 +150,7 @@ def doctor_logout():
 # ------------------ New Treatment Routes ------------------
 
 def fetch_patients():
-    conn = sqlite3.connect('hospital.db')
+    conn = get_db_connection()
     conn.execute("PRAGMA foreign_keys = ON")
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -163,7 +164,7 @@ def fetch_patients():
     return patients
 
 def fetch_prescribed_patients_for_doctor(user_id):
-    conn = sqlite3.connect('hospital.db')
+    conn = get_db_connection()
     conn.execute("PRAGMA foreign_keys = ON")
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -187,7 +188,7 @@ def fetch_patient_by_id(cursor, patient_id):
     return cursor.fetchone()
 
 def fetch_all_doctors():
-    conn = sqlite3.connect('hospital.db')
+    conn = get_db_connection()
     conn.execute("PRAGMA foreign_keys = ON")
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -202,7 +203,7 @@ def fetch_all_doctors():
     return doctors
 
 def fetch_doctor(user_id):
-    conn = sqlite3.connect('hospital.db')
+    conn = get_db_connection()
     conn.execute("PRAGMA foreign_keys = ON")
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -218,7 +219,7 @@ def fetch_doctor(user_id):
 
 def fetch_appointments_for_doctor(doctor_id):
     print(f"🔍 Fetching appointments for doctor ID: {doctor_id}")  # Debug print
-    conn = sqlite3.connect('hospital.db')
+    conn = get_db_connection()
     conn.execute("PRAGMA foreign_keys = ON")
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -244,11 +245,10 @@ def prescribe():
         flash('Access denied.', 'danger')
         return redirect(url_for('auth.role_login'))
 
-    conn = sqlite3.connect('hospital.db')
+    conn = get_db_connection()
     conn.execute("PRAGMA foreign_keys = ON")
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-
     if request.method == 'POST':
         appointment_id = request.form.get('appointment_id')
         medication = request.form.get('medication')
@@ -336,7 +336,8 @@ def recommend_test():
         flash('Access denied.', 'danger')
         return redirect(url_for('auth.role_login'))
 
-    conn = sqlite3.connect('hospital.db')
+    from utils.db import get_db_connection  # ✅ Centralized connection
+    conn = get_db_connection()
     conn.execute("PRAGMA foreign_keys = ON")
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -371,7 +372,6 @@ def recommend_test():
     doctor = fetch_doctor(user_id)
     patients = fetch_patients()
     appointments = fetch_appointments_for_doctor(user_id)
-
     cursor.execute("""
         SELECT tr.test_name, tr.reason, tr.created_at,
                pt.first_name || ' ' || pt.last_name AS patient_name
@@ -381,7 +381,6 @@ def recommend_test():
         ORDER BY tr.created_at DESC
     """, (user_id,))
     recommendations = cursor.fetchall()
-
     conn.close()
 
     return render_template('doctor/treatment_and_prescription.html',
@@ -401,7 +400,8 @@ def refer_patient():
         flash('Access denied.', 'danger')
         return redirect(url_for('auth.role_login'))
 
-    conn = sqlite3.connect('hospital.db')
+    from utils.db import get_db_connection  # ✅ Centralized connection
+    conn = get_db_connection()
     conn.execute("PRAGMA foreign_keys = ON")
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -465,7 +465,8 @@ def follow_up():
         flash('Access denied.', 'danger')
         return redirect(url_for('auth.role_login'))
 
-    conn = sqlite3.connect('hospital.db')
+    from utils.db import get_db_connection  # ✅ Centralized connection
+    conn = get_db_connection()
     conn.execute("PRAGMA foreign_keys = ON")
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()

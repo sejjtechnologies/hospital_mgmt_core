@@ -3,16 +3,12 @@ import sqlite3
 import bcrypt
 from datetime import datetime
 import os
+from utils.db import get_db_connection  # ✅ Centralized connection
 from utils.audit_loggery import log_audit
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-def get_db_connection():
-    conn = sqlite3.connect('hospital.db')
-    conn.row_factory = sqlite3.Row
-    return conn
 
 @admin_bp.route('/landing_page')
 def landing_page():
@@ -224,7 +220,7 @@ def delete_user(user_id):
     if 'admin_id' not in session:
         return redirect(url_for('admin.admin_login'))
 
-    conn = get_db_connection()
+    conn = get_db_connection()  # ✅ Centralized connection
     cursor = conn.cursor()
     cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
     conn.commit()
@@ -238,7 +234,7 @@ def audit_trail():
     if 'admin_id' not in session:
         return redirect(url_for('admin.admin_login'))
 
-    conn = get_db_connection()
+    conn = get_db_connection()  # ✅ Centralized connection
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM audit_trail ORDER BY timestamp DESC")
     entries = cursor.fetchall()
@@ -252,7 +248,7 @@ def admin_profile():
         return redirect(url_for('admin.admin_login'))
 
     admin_id = session['admin_id']
-    conn = get_db_connection()
+    conn = get_db_connection()  # ✅ Centralized connection
     cursor = conn.cursor()
 
     cursor.execute("SELECT * FROM admin_users WHERE id = ?", (admin_id,))
