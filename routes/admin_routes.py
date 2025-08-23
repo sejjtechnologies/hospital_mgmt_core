@@ -163,6 +163,47 @@ def edit_user(user_id):
     ''', (user_id,))
     user = cursor.fetchone()
 
+    if request.method == 'POST':
+        first_name = request.form['first_name']
+        last_name = request.form['last_name']
+        email = request.form['email']
+        role_id = request.form['role_id']
+
+        profile_pic = request.files['profile_pic']
+        filename = user['profile_pic'] if user and 'profile_pic' in user.keys() else None
+
+        if profile_pic and profile_pic.filename != '':
+            filename = f"user_{user_id}_{int(datetime.now().timestamp())}.png"
+            filepath = os.path.join(UPLOAD_FOLDER, filename)
+            profile_pic.save(filepath)
+
+        cursor.execute('''
+            UPDATE users
+            SET first_name = ?, last_name = ?, email = ?, role_id = ?, profile_pic = ?
+            WHERE id = ?
+        ''', (first_name, last_name, email, role_id, filename, user_id))
+
+        conn.commit()
+
+        admin_id = session['admin_id']
+        admin = get_admin_by_id(admin_id)
+        if admin and user:
+            log_audit(
+                actor_id=admin_id,
+                actor_role="ADMIN",
+                first_name=admin['first_name'],
+                last_name=admin['last_name'],
+                action="user_update",
+                details=f"Updated user {user['email']}",
+                status="success",
+                ip_address=request.remote_addr
+            )
+
+        flash("User updated successfully.", "success")
+        return redirect(url_for('admin.edit_user', user_id=user_id))
+
+    conn.close()
+    return render_template('admin/edit_user.html', user=user, roles=roles)
 @admin_bp.route('/reset-password/<int:user_id>', methods=['POST'])
 def reset_password(user_id):
     if 'admin_id' not in session:

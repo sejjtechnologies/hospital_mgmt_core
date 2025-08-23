@@ -9,7 +9,9 @@ from datetime import datetime
 import os
 
 app = Flask(__name__)
-app.secret_key = 'your-secure-secret-key'  # Replace with a strong key or load from .env
+
+# Load secret key from environment variable (your exact key is set in Render)
+app.secret_key = os.getenv('SECRET_KEY', 's3jj$2025!secureKey!')  # ✅ Secure and fallback-safe
 
 # Profile picture upload folder
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
@@ -38,5 +40,6 @@ def format_datetime(value, format='%A %b %d, %Y %I:%M %p'):
 def landing():
     return render_template('landing_page.html')
 
+# Local development only
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)  # Render uses gunicorn, so this is ignored in production
