@@ -12,7 +12,11 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
         <a class="navbar-brand fw-bold" href="#">🏥 HMS - Admin</a>
-        <div class="collapse navbar-collapse justify-content-end">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" title="Toggle navigation" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+            <span class="visually-hidden">Toggle navigation</span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
             <ul class="navbar-nav">
                 <li class="nav-item">
                     <a class="btn btn-outline-light" href="{{ url_for('admin.admin_logout') }}">Logout</a>
@@ -27,22 +31,23 @@
     <h2 class="fw-bold">Welcome, Admin</h2>
     <p class="lead">Manage users, oversee operations, and maintain system integrity.</p>
 
-    <!-- Button Row -->
-    <div class="d-flex justify-content-center gap-3 mt-4">
-        <!-- Create User Button -->
-        <a href="{{ url_for('admin.create_user') }}" class="btn btn-primary">
-            ➕ Create New User
-        </a>
-
-        <!-- Audit Trail Button -->
-        <a href="{{ url_for('admin.audit_trail') }}" class="btn btn-success">
-            🗂️ Audit Trail
-        </a>
-
-        <!-- Settings Button (Linked) -->
-        <a href="{{ url_for('admin.admin_profile') }}" class="btn btn-dark">
-            ⚙️ Settings
-        </a>
+    <!-- Button Grid -->
+    <div class="row mt-4 g-3 justify-content-center">
+        <div class="col-12 col-sm-6 col-md-4">
+            <a href="{{ url_for('admin.create_user') }}" class="btn btn-primary w-100">
+                ➕ Create New User
+            </a>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4">
+            <a href="{{ url_for('admin.audit_trail') }}" class="btn btn-success w-100">
+                🗂️ Audit Trail
+            </a>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4">
+            <a href="{{ url_for('admin.admin_profile') }}" class="btn btn-dark w-100">
+                ⚙️ Settings
+            </a>
+        </div>
     </div>
 </div>
 
