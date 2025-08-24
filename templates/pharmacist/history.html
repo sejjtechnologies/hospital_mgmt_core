@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dispense History</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .navbar {
+      padding: 0.5rem 1rem;
+    }
+    /* Back button styling */
+    .back-button {
+      margin-top: 1rem;
+      margin-left: 1rem;
+      background-color: #0d6efd;
+      color: white;
+      border: none;
+    }
+    .back-button:hover {
+      background-color: #0b5ed7;
+      color: white;
+    }
+    h3 {
+      margin-top: 1rem;
+    }
+    table input {
+      min-width: 50px;
+    }
+    .edit-mode input {
+      width: 100%;
+      border: 1px solid #ccc;
+      padding: 4px;
+      border-radius: 4px;
+    }
+    .table th, .table td {
+      vertical-align: middle;
+    }
+    @media (max-width: 768px) {
+      .table-responsive table {
+        font-size: 0.9rem;
+      }
+      .btn {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+      }
+      h3 {
+        font-size: 1.25rem;
+      }
+      p {
+        font-size: 0.9rem;
+      }
+      .back-button {
+        width: 100%;
+        text-align: center;
+        margin-left: 0;
+        margin-bottom: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark bg-secondary">
+  <div class="container-fluid">
+    <span class="navbar-brand fw-bold">Dispense History</span>
+  </div>
+</nav>
+
+<!-- Back button below navbar -->
+<a class="btn back-button" href="{{ url_for('pharmacist.pharmacist_dashboard') }}">Back</a>
+
+<div class="container mt-4">
+  <h3 class="fw-bold text-secondary">Medication Dispense History</h3>
+  <p class="text-muted">Review all dispensed medications and actions taken.</p>
+
+  {% if logs %}
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped align-middle">
+        <thead class="table-secondary">
+          <tr>
+            <th>Patient</th>
+            <th>Medication</th>
+            <th>Dosage</th>
+            <th>Quantity</th>
+            <th>Date</th>
+            <th>Pharmacist</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+          <tr id="row-{{ log.id }}">
+            <form method="POST" action="{{ url_for('pharmacist.edit_dispense_log', log_id=log.id) }}">
+              <td><input type="text" name="patient_name" value="{{ log.patient_name }}" class="form-control" readonly></td>
+              <td><input type="text" name="medication_name" value="{{ log.medication_name }}" class="form-control" readonly></td>
+              <td><input type="text" name="dosage" value="{{ log.dosage }}" class="form-control" readonly></td>
+              <td><input type="number" name="quantity_dispensed" value="{{ log.quantity_dispensed }}" class="form-control" readonly></td>
+              <td>
+                <input type="date" name="dispense_date"
+                       value="{{ log.dispense_date[:10] if log.dispense_date }}"
+                       class="form-control" readonly onkeydown="return false;">
+              </td>
+              <td><input type="text" name="pharmacist_name" value="{{ log.pharmacist_name }}" class="form-control" readonly></td>
+              <td class="text-center">
+                <button type="button" class="btn btn-sm btn-warning me-1 mb-1" onclick="enableEdit(this)">Edit</button>
+                <button type="submit" class="btn btn-sm btn-success me-1 mb-1 d-none">Save</button>
+                <a href="{{ url_for('pharmacist.delete_dispense_log', log_id=log.id) }}"
+                   class="btn btn-sm btn-danger mb-1"
+                   onclick="return confirm('Are you sure you want to permanently delete this record?')">Delete</a>
+              </td>
+            </form>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="alert alert-info">No dispense records found.</div>
+  {% endif %}
+</div>
+
+<script>
+  function enableEdit(button) {
+    const row = button.closest('tr');
+    const inputs = row.querySelectorAll('input');
+    const saveBtn = row.querySelector('button[type="submit"]');
+
+    inputs.forEach(input => {
+      input.removeAttribute('readonly');
+      if (input.type === 'date') {
+        input.onkeydown = null;
+      }
+    });
+
+    button.classList.add('d-none');
+    saveBtn.classList.remove('d-none');
+  }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

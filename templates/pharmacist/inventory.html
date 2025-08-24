@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Medication Inventory</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .navbar {
+      padding: 0.5rem 1rem;
+    }
+    /* Back button styling */
+    .back-button {
+      margin-top: 1rem;
+      margin-left: 1rem;
+      background-color: #0d6efd; /* Bootstrap primary blue */
+      color: white;
+      border: none;
+    }
+    .back-button:hover {
+      background-color: #0b5ed7;
+      color: white;
+    }
+    h3 {
+      margin-top: 1rem;
+    }
+    .table td, .table th {
+      vertical-align: middle;
+    }
+    .btn-group.d-flex .btn {
+      flex: 1 1 auto;
+    }
+    @media (max-width: 768px) {
+      table {
+        font-size: 0.85rem;
+      }
+      h3 {
+        font-size: 1.2rem;
+      }
+      p {
+        font-size: 0.9rem;
+      }
+      .btn {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+      }
+      .back-button {
+        width: 100%;
+        text-align: center;
+        margin-left: 0;
+        margin-bottom: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container-fluid">
+    <span class="navbar-brand fw-bold">HMS - Inventory</span>
+  </div>
+</nav>
+
+<!-- Back button below navbar -->
+<a class="btn back-button" href="{{ url_for('pharmacist.pharmacist_dashboard') }}">Back</a>
+
+<div class="container mt-4">
+  <h3 class="fw-bold text-primary">Medication Inventory</h3>
+  <p class="text-muted">View all stocked medications and quantities.</p>
+
+  {% if medications %}
+  <div class="table-responsive mt-4">
+    <table class="table table-bordered table-hover align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Dosage</th>
+          <th>Form</th>
+          <th>Manufacturer</th>
+          <th>Quantity</th>
+          <th>Expiry Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for med in medications %}
+        <tr class="{% if med['quantity_in_stock'] < 10 %}table-warning{% endif %}">
+          <td>{{ loop.index }}</td>
+          <td>{{ med['name'] }}</td>
+          <td>{{ med['dosage'] }}</td>
+          <td>{{ med['form'] }}</td>
+          <td>{{ med['manufacturer'] }}</td>
+          <td>{{ med['quantity_in_stock'] }}</td>
+          <td>{{ med['expiry_date'] }}</td>
+          <td>
+            <div class="btn-group d-flex flex-wrap" role="group">
+              <a href="{{ url_for('pharmacist.edit_medication', med_id=med['id']) }}" class="btn btn-sm btn-outline-primary flex-fill mb-1">Edit</a>
+              <a href="{{ url_for('pharmacist.update_stock', med_id=med['id']) }}" class="btn btn-sm btn-outline-success flex-fill mb-1">Update Stock</a>
+              <a href="{{ url_for('pharmacist.delete_medication', med_id=med['id']) }}" class="btn btn-sm btn-outline-danger flex-fill mb-1">Delete</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="alert alert-secondary mt-4">No medications found in inventory.</div>
+  {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

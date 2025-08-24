@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Confirm Delete</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .navbar {
+      padding: 0.5rem 1rem;
+    }
+    .back-button {
+      margin-top: 1rem;
+      margin-left: 1rem;
+    }
+    h4 {
+      margin-top: 1rem;
+    }
+    @media (max-width: 768px) {
+      .btn {
+        font-size: 0.85rem;
+      }
+      h4 {
+        font-size: 1.1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark bg-danger">
+  <div class="container-fluid">
+    <span class="navbar-brand fw-bold">🗑️ Delete Medication</span>
+  </div>
+</nav>
+
+<!-- Back button below navbar -->
+<a class="btn btn-outline-light back-button" href="{{ url_for('pharmacist.view_inventory') }}">← Back</a>
+
+<div class="container mt-4">
+  <h4 class="fw-bold text-danger">Confirm Deletion</h4>
+  <p class="text-muted">Are you sure you want to delete <strong>{{ med_name }}</strong>?</p>
+
+  <form method="POST" action="{{ url_for('pharmacist.delete_medication', med_id=med_id) }}">
+    <button type="submit" class="btn btn-danger">Yes, Delete</button>
+    <a href="{{ url_for('pharmacist.view_inventory') }}" class="btn btn-secondary ms-2">Cancel</a>
+  </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

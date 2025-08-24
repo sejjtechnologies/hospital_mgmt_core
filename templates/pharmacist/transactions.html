@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inventory Transactions</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-info">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold" href="#">📈 Inventory Transactions</a>
+    <a class="btn btn-outline-light ms-auto" href="{{ url_for('pharmacist.pharmacist_dashboard') }}">← Back</a>
+  </div>
+</nav>
+
+<div class="container mt-5">
+  <h3 class="fw-bold text-info">Inventory Transactions</h3>
+  <p class="text-muted">Track stock movements and audit logs.</p>
+
+  <div class="alert alert-info">Transaction records will be displayed here.</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
