@@ -70,7 +70,7 @@
                 <label class="form-label">Role</label>
                 <select name="role_id" class="form-select form-select-sm" required title="Select Role">
                     {% for role in roles %}
-                        <option value="{{ role[0] }}">{{ role[1] }}</option>
+                        <option value="{{ role.id }}">{{ role.name }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -99,34 +99,34 @@
             <tbody>
                 {% for user in users %}
                 <tr>
-                    <td>{{ user[0] }}</td>
+                    <td>{{ user.id }}</td>
                     <td>
-                        {% if user[5] %}
-                            <img src="{{ url_for('static', filename='uploads/' ~ user[5]) }}" class="profile-thumb" alt="Profile picture of {{ user[1] }} {{ user[2] }}">
+                        {% if user.profile_pic %}
+                            <img src="{{ url_for('static', filename='uploads/' ~ user.profile_pic) }}" class="profile-thumb" alt="Profile picture of {{ user.first_name }} {{ user.last_name }}">
                         {% else %}
                             <span class="text-muted">No Image</span>
                         {% endif %}
                     </td>
-                    <td>{{ user[1] }}</td>
-                    <td>{{ user[2] }}</td>
-                    <td>{{ user[3] }}</td>
-                    <td>{{ user[4] }}</td>
+                    <td>{{ user.first_name }}</td>
+                    <td>{{ user.last_name }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.role_name }}</td>
                     <td>
-                        <a href="{{ url_for('admin.edit_user', user_id=user[0]) }}" class="btn btn-sm btn-outline-primary">More Actions</a>
-                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal{{ user[0] }}">
+                        <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn btn-sm btn-outline-primary">More Actions</a>
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal{{ user.id }}">
                             Delete
                         </button>
 
-                        <div class="modal fade" id="confirmDeleteModal{{ user[0] }}" tabindex="-1" aria-labelledby="confirmDeleteLabel{{ user[0] }}" aria-hidden="true">
+                        <div class="modal fade" id="confirmDeleteModal{{ user.id }}" tabindex="-1" aria-labelledby="confirmDeleteLabel{{ user.id }}" aria-hidden="true">
                           <div class="modal-dialog">
-                            <form method="POST" action="{{ url_for('admin.delete_user', user_id=user[0]) }}">
+                            <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}">
                               <div class="modal-content">
                                 <div class="modal-header bg-danger text-white">
-                                  <h5 class="modal-title" id="confirmDeleteLabel{{ user[0] }}">Confirm Permanent Deletion</h5>
+                                  <h5 class="modal-title" id="confirmDeleteLabel{{ user.id }}">Confirm Permanent Deletion</h5>
                                   <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
-                                  <p>Are you sure you want to delete <strong>{{ user[1] }} {{ user[2] }}</strong>? This action <strong>cannot be undone</strong>.</p>
+                                  <p>Are you sure you want to delete <strong>{{ user.first_name }} {{ user.last_name }}</strong>? This action <strong>cannot be undone</strong>.</p>
                                 </div>
                                 <div class="modal-footer">
                                   <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>

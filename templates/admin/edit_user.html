@@ -50,32 +50,32 @@
 
     <h2>Edit User Profile</h2>
     <div class="d-flex align-items-center mb-4">
-        {% if user[5] %}
-            <img src="{{ url_for('static', filename='uploads/' ~ user[5]) }}" class="profile-thumb me-3">
+        {% if user.profile_pic %}
+            <img src="{{ url_for('static', filename='uploads/' ~ user.profile_pic) }}" class="profile-thumb me-3">
         {% else %}
             <div class="me-3 text-muted">No Image</div>
         {% endif %}
         <div>
-            <h5>{{ user[1] }} {{ user[2] }}</h5>
-            <p class="mb-0"><strong>Email:</strong> {{ user[3] }}</p>
-            <p class="mb-0"><strong>Role:</strong> {{ user[4] }}</p>
+            <h5>{{ user.first_name }} {{ user.last_name }}</h5>
+            <p class="mb-0"><strong>Email:</strong> {{ user.email }}</p>
+            <p class="mb-0"><strong>Role:</strong> {{ user.role_name }}</p>
         </div>
     </div>
 
     <!-- Edit Profile Form -->
-    <form method="POST" enctype="multipart/form-data" action="{{ url_for('admin.edit_user', user_id=user[0]) }}">
+    <form method="POST" enctype="multipart/form-data" action="{{ url_for('admin.edit_user', user_id=user.id) }}">
         <div class="row">
             <div class="col-md-4 mb-2">
                 <label class="form-label">First Name</label>
-                <input type="text" name="first_name" value="{{ user[1] }}" class="form-control form-control-sm" required>
+                <input type="text" name="first_name" value="{{ user.first_name }}" class="form-control form-control-sm" required>
             </div>
             <div class="col-md-4 mb-2">
                 <label class="form-label">Last Name</label>
-                <input type="text" name="last_name" value="{{ user[2] }}" class="form-control form-control-sm" required>
+                <input type="text" name="last_name" value="{{ user.last_name }}" class="form-control form-control-sm" required>
             </div>
             <div class="col-md-4 mb-2">
                 <label class="form-label">Email</label>
-                <input type="email" name="email" value="{{ user[3] }}" class="form-control form-control-sm" required>
+                <input type="email" name="email" value="{{ user.email }}" class="form-control form-control-sm" required>
             </div>
         </div>
         <div class="row">
@@ -87,7 +87,7 @@
                 <label class="form-label">Role</label>
                 <select name="role_id" class="form-select form-select-sm" required>
                     {% for role in roles %}
-                        <option value="{{ role[0] }}" {% if role[1] == user[4] %}selected{% endif %}>{{ role[1] }}</option>
+                        <option value="{{ role.id }}" {% if role.id == user.role_id %}selected{% endif %}>{{ role.name }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -104,7 +104,7 @@
     <!-- Password Reset Section -->
     <div class="mt-5">
         <h4>Reset User Password</h4>
-        <form method="POST" action="{{ url_for('admin.reset_password', user_id=user[0]) }}">
+        <form method="POST" action="{{ url_for('admin.reset_password', user_id=user.id) }}">
             <div class="row">
                 <div class="col-md-4 mb-2">
                     <label class="form-label">Admin Password</label>
@@ -127,7 +127,7 @@
 <!-- Delete Confirmation Modal -->
 <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
   <div class="modal-dialog">
-    <form method="POST" action="{{ url_for('admin.delete_user', user_id=user[0]) }}">
+    <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}">
       <div class="modal-content">
         <div class="modal-header bg-danger text-white">
           <h5 class="modal-title" id="confirmDeleteLabel">Confirm Permanent Deletion</h5>

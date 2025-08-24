@@ -34,12 +34,26 @@ def get_admin_by_id(admin_id):
     conn.close()
     return admin
 
+def log_session_invalidation(admin_id, reason):
+    """Logs session invalidation to audit trail."""
+    admin = get_admin_by_id(admin_id)
+    if admin:
+        log_audit(
+            actor_id=admin_id,
+            actor_role="ADMIN",
+            first_name=admin['first_name'],
+            last_name=admin['last_name'],
+            action="session_invalidation",
+            details=f"Session invalidated due to {reason}",
+            status="success",
+            ip_address="N/A"
+        )
+
 @admin_bp.route('/login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
         email = request.form['email'].strip().lower()
         password = request.form['password']
-        print("🔐 Login attempt:", repr(email), repr(password))
 
         conn = get_db_connection()
         conn.row_factory = sqlite3.Row
@@ -47,9 +61,9 @@ def admin_login():
         cursor.execute("SELECT id, password, first_name, last_name FROM admin_users WHERE email = ?", (email,))
         user = cursor.fetchone()
         conn.close()
-        print("🔍 DB user:", user)
 
         if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
+            session.clear()  # 🔹 Immediately invalidate any previous session
             session['admin_id'] = user['id']
             session['first_name'] = user['first_name']
             session['last_name'] = user['last_name']
@@ -82,9 +96,6 @@ def admin_logout():
                 status="success",
                 ip_address=request.remote_addr
             )
-    else:
-        print("⚠️ Skipping audit: admin_id missing")
-
     session.clear()
     flash('You have been logged out.', 'info')
     return redirect(url_for('admin.admin_login'))
@@ -97,7 +108,6 @@ def create_user():
     conn = get_db_connection()
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-
     cursor.execute("SELECT id, name FROM roles ORDER BY name ASC")
     roles = cursor.fetchall()
 
@@ -107,7 +117,6 @@ def create_user():
         email = request.form['email']
         password = request.form['password']
         role_id = request.form['role_id']
-        created_at = datetime.now().isoformat()
 
         hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
@@ -139,7 +148,6 @@ def create_user():
         ORDER BY users.id ASC
     ''')
     users = cursor.fetchall()
-
     conn.close()
     return render_template('admin/create_user.html', roles=roles, users=users)
 
@@ -151,12 +159,11 @@ def edit_user(user_id):
     conn = get_db_connection()
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-
     cursor.execute("SELECT id, name FROM roles ORDER BY name ASC")
     roles = cursor.fetchall()
 
     cursor.execute('''
-        SELECT users.id, users.first_name, users.last_name, users.email, roles.name AS role_name, users.profile_pic, users.role_id
+        SELECT users.id, users.first_name, users.last_name, users.email, users.profile_pic, users.role_id, roles.name AS role_name
         FROM users
         JOIN roles ON users.role_id = roles.id
         WHERE users.id = ?
@@ -182,7 +189,6 @@ def edit_user(user_id):
             SET first_name = ?, last_name = ?, email = ?, role_id = ?, profile_pic = ?
             WHERE id = ?
         ''', (first_name, last_name, email, role_id, filename, user_id))
-
         conn.commit()
 
         admin_id = session['admin_id']
@@ -200,10 +206,12 @@ def edit_user(user_id):
             )
 
         flash("User updated successfully.", "success")
+        conn.close()
         return redirect(url_for('admin.edit_user', user_id=user_id))
 
     conn.close()
     return render_template('admin/edit_user.html', user=user, roles=roles)
+
 @admin_bp.route('/reset-password/<int:user_id>', methods=['POST'])
 def reset_password(user_id):
     if 'admin_id' not in session:
@@ -223,6 +231,10 @@ def reset_password(user_id):
         flash("Passwords do not match.", "warning")
         return redirect(url_for('admin.edit_user', user_id=user_id))
 
+    if len(new_password) < 8:
+        flash("Password must be at least 8 characters.", "warning")
+        return redirect(url_for('admin.edit_user', user_id=user_id))
+
     hashed_pw = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
     conn = get_db_connection()
@@ -233,6 +245,10 @@ def reset_password(user_id):
     cursor.execute("UPDATE users SET password = ? WHERE id = ?", (hashed_pw, user_id))
     conn.commit()
     conn.close()
+
+    # 🔹 Invalidate sessions for this user and log it
+    session.clear()
+    log_session_invalidation(admin_id, f"password reset for user {target_user['email']}")
 
     if admin_id and target_user:
         log_audit(
@@ -245,18 +261,16 @@ def reset_password(user_id):
             status="success",
             ip_address=request.remote_addr
         )
-    else:
-        print("⚠️ Skipping audit: missing admin or target user")
 
     flash("Password reset successful.", "success")
     return redirect(url_for('admin.edit_user', user_id=user_id))
 
-@admin_bp.route('/delete-user/<int:user_id>')
+@admin_bp.route('/delete-user/<int:user_id>', methods=['POST'])
 def delete_user(user_id):
     if 'admin_id' not in session:
         return redirect(url_for('admin.admin_login'))
 
-    conn = get_db_connection()  # ✅ Centralized connection
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
     conn.commit()
@@ -270,7 +284,7 @@ def audit_trail():
     if 'admin_id' not in session:
         return redirect(url_for('admin.admin_login'))
 
-    conn = get_db_connection()  # ✅ Centralized connection
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM audit_trail ORDER BY timestamp DESC")
     entries = cursor.fetchall()
@@ -284,13 +298,15 @@ def admin_profile():
         return redirect(url_for('admin.admin_login'))
 
     admin_id = session['admin_id']
-    conn = get_db_connection()  # ✅ Centralized connection
+    conn = get_db_connection()
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
     cursor.execute("SELECT * FROM admin_users WHERE id = ?", (admin_id,))
     admin = cursor.fetchone()
 
     if request.method == 'POST':
+        # PASSWORD CHANGE
         if 'current_password' in request.form:
             current = request.form['current_password']
             new = request.form['new_password']
@@ -318,10 +334,14 @@ def admin_profile():
                     ip_address=request.remote_addr
                 )
 
+                # 🔹 Invalidate old sessions and log
+                session.clear()
+                log_session_invalidation(admin_id, "admin password change")
                 flash('Password updated successfully.', 'success')
                 conn.close()
-                return redirect(url_for('admin.admin_profile'))
+                return redirect(url_for('admin.admin_login'))
 
+        # PROFILE UPDATE
         else:
             first_name = request.form['first_name']
             last_name = request.form['last_name']
@@ -360,6 +380,5 @@ def admin_profile():
     # Fetch all admin users for display
     cursor.execute("SELECT * FROM admin_users ORDER BY id ASC")
     admin_users = cursor.fetchall()
-
     conn.close()
     return render_template('admin/admin_profile.html', admin=admin, admin_users=admin_users)
