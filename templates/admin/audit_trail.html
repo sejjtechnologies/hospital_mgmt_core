@@ -9,7 +9,7 @@
             background-color: #f8f9fa;
         }
         .container {
-            max-width: 1000px;
+            max-width: 1400px;
             padding: 1rem;
         }
         .back-btn {
@@ -23,11 +23,18 @@
         h2 {
             font-weight: bold;
             margin-top: 1rem;
+            font-size: 1.8rem;
+        }
+        .table {
+            width: 100%;
+            table-layout: auto;
+            font-size: 1rem;
         }
         .table th, .table td {
             vertical-align: middle;
-            padding: 0.5rem;
-            font-size: 0.95rem;
+            padding: 0.75rem;
+            white-space: normal;
+            word-break: break-word;
         }
         @media (max-width: 768px) {
             .container {
@@ -36,8 +43,10 @@
             h2 {
                 font-size: 1.3rem;
             }
-            .table th, .table td {
+            .table {
                 font-size: 0.85rem;
+            }
+            .table th, .table td {
                 padding: 0.4rem;
             }
             .back-btn {
@@ -59,36 +68,36 @@
 
     <!-- Table -->
     <div class="table-responsive">
-      <table class="table table-bordered table-striped mt-4">
-          <thead class="table-dark">
-              <tr>
-                  <th>ID</th>
-                  <th>Actor</th>
-                  <th>Role</th>
-                  <th>Action</th>
-                  <th>Target</th>
-                  <th>Status</th>
-                  <th>IP</th>
-                  <th>Time</th>
-                  <th>Details</th>
-              </tr>
-          </thead>
-          <tbody>
-              {% for entry in entries %}
-              <tr>
-                  <td>{{ entry[0] }}</td>
-                  <td>{{ entry[3] }} {{ entry[4] }}</td>
-                  <td>{{ entry[2] }}</td>
-                  <td>{{ entry[5] }}</td>
-                  <td>{{ entry[6] or '—' }}</td>
-                  <td>{{ entry[9] or '—' }}</td>
-                  <td>{{ entry[10] or '—' }}</td>
-                  <td>{{ entry[7] }}</td>
-                  <td>{{ entry[8] }}</td>
-              </tr>
-              {% endfor %}
-          </tbody>
-      </table>
+        <table class="table table-bordered table-striped w-100 mt-4">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Actor</th>
+                    <th>Role</th>
+                    <th>Action</th>
+                    <th>Target</th>
+                    <th>Status</th>
+                    <th>IP</th>
+                    <th>Time</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in entries %}
+                <tr>
+                    <td>{{ entry[0] }}</td>
+                    <td>{{ entry[3] }} {{ entry[4] }}</td>
+                    <td>{{ entry[2] }}</td>
+                    <td>{{ entry[5] }}</td>
+                    <td>{{ entry[6] or '—' }}</td>
+                    <td>{{ entry[9] or '—' }}</td>
+                    <td>{{ entry[10] or '—' }}</td>
+                    <td>{{ entry[7] }}</td>
+                    <td>{{ entry[8] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 </body>
