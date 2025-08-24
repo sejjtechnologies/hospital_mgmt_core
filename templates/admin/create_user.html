@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Create User</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
@@ -25,6 +27,7 @@
             transform: translateY(-50%);
             cursor: pointer;
             color: #6c757d;
+            font-size: 1rem;
         }
         .position-relative {
             position: relative;
@@ -42,30 +45,30 @@
         <div class="row">
             <div class="col-md-4 mb-2">
                 <label class="form-label">First Name</label>
-                <input type="text" name="first_name" class="form-control form-control-sm" required oninput="this.value = this.value.toUpperCase();">
+                <input type="text" name="first_name" class="form-control form-control-sm" required oninput="this.value = this.value.toUpperCase();" title="Enter First Name" placeholder="First Name">
             </div>
             <div class="col-md-4 mb-2">
                 <label class="form-label">Last Name</label>
-                <input type="text" name="last_name" class="form-control form-control-sm" required oninput="this.value = this.value.toUpperCase();">
+                <input type="text" name="last_name" class="form-control form-control-sm" required oninput="this.value = this.value.toUpperCase();" title="Enter Last Name" placeholder="Last Name">
             </div>
             <div class="col-md-4 mb-2">
                 <label class="form-label">Email</label>
-                <input type="email" name="email" class="form-control form-control-sm" required>
+                <input type="email" name="email" class="form-control form-control-sm" required title="Enter Email Address" placeholder="Email Address">
             </div>
         </div>
         <div class="row">
             <div class="col-md-4 mb-2 position-relative">
                 <label class="form-label">Password</label>
-                <input type="password" name="password" id="passwordField" class="form-control form-control-sm" required>
-                <span class="toggle-password" onclick="togglePassword()">👁️</span>
+                <input type="password" name="password" id="passwordField" class="form-control form-control-sm" required title="Enter Password" placeholder="Password">
+                <span class="toggle-password" onclick="togglePassword(this)">👁️</span>
             </div>
             <div class="col-md-4 mb-2">
                 <label class="form-label">Profile Picture</label>
-                <input type="file" name="profile_pic" class="form-control form-control-sm">
+                <input type="file" name="profile_pic" class="form-control form-control-sm" title="Upload Profile Picture" placeholder="Choose profile image">
             </div>
             <div class="col-md-4 mb-2">
                 <label class="form-label">Role</label>
-                <select name="role_id" class="form-select form-select-sm" required>
+                <select name="role_id" class="form-select form-select-sm" required title="Select Role">
                     {% for role in roles %}
                         <option value="{{ role[0] }}">{{ role[1] }}</option>
                     {% endfor %}
@@ -99,7 +102,7 @@
                     <td>{{ user[0] }}</td>
                     <td>
                         {% if user[5] %}
-                            <img src="{{ url_for('static', filename='uploads/' ~ user[5]) }}" class="profile-thumb">
+                            <img src="{{ url_for('static', filename='uploads/' ~ user[5]) }}" class="profile-thumb" alt="Profile picture of {{ user[1] }} {{ user[2] }}">
                         {% else %}
                             <span class="text-muted">No Image</span>
                         {% endif %}
@@ -146,9 +149,15 @@
 
 <!-- Password Toggle Script -->
 <script>
-function togglePassword() {
+function togglePassword(toggleIcon) {
     const field = document.getElementById("passwordField");
-    field.type = field.type === "password" ? "text" : "password";
+    if (field.type === "password") {
+        field.type = "text";
+        toggleIcon.textContent = "🙈";
+    } else {
+        field.type = "password";
+        toggleIcon.textContent = "👁️";
+    }
 }
 </script>
 
