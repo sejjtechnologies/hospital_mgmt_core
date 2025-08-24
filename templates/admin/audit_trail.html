@@ -1,4 +1,3 @@
-<!-- templates/admin/audit_trail.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,6 +5,13 @@
     <title>Audit Trail</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 1000px;
+            padding: 1rem;
+        }
         .back-btn {
             background-color: #007BFF;
             color: white;
@@ -13,6 +19,32 @@
             padding: 6px 12px;
             font-size: 14px;
             text-decoration: none;
+        }
+        h2 {
+            font-weight: bold;
+            margin-top: 1rem;
+        }
+        .table th, .table td {
+            vertical-align: middle;
+            padding: 0.5rem;
+            font-size: 0.95rem;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 0.5rem;
+            }
+            h2 {
+                font-size: 1.3rem;
+            }
+            .table th, .table td {
+                font-size: 0.85rem;
+                padding: 0.4rem;
+            }
+            .back-btn {
+                width: 100%;
+                text-align: center;
+                margin-bottom: 1rem;
+            }
         }
     </style>
 </head>
@@ -22,37 +54,42 @@
     <!-- Back Button -->
     <button onclick="window.history.back()" class="back-btn mb-3 d-inline-block">Back</button>
 
+    <!-- Heading -->
     <h2 class="text-center text-success">🗂️ Audit Trail</h2>
-    <table class="table table-bordered table-striped mt-4">
-        <thead class="table-dark">
-            <tr>
-                <th>ID</th>
-                <th>Actor</th>
-                <th>Role</th>
-                <th>Action</th>
-                <th>Target</th>
-                <th>Status</th>
-                <th>IP</th>
-                <th>Time</th>
-                <th>Details</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for entry in entries %}
-            <tr>
-                <td>{{ entry[0] }}</td>
-                <td>{{ entry[3] }} {{ entry[4] }}</td>
-                <td>{{ entry[2] }}</td>
-                <td>{{ entry[5] }}</td>
-                <td>{{ entry[6] or '—' }}</td>
-                <td>{{ entry[9] or '—' }}</td>
-                <td>{{ entry[10] or '—' }}</td>
-                <td>{{ entry[7] }}</td>
-                <td>{{ entry[8] }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+
+    <!-- Table -->
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped mt-4">
+          <thead class="table-dark">
+              <tr>
+                  <th>ID</th>
+                  <th>Actor</th>
+                  <th>Role</th>
+                  <th>Action</th>
+                  <th>Target</th>
+                  <th>Status</th>
+                  <th>IP</th>
+                  <th>Time</th>
+                  <th>Details</th>
+              </tr>
+          </thead>
+          <tbody>
+              {% for entry in entries %}
+              <tr>
+                  <td>{{ entry[0] }}</td>
+                  <td>{{ entry[3] }} {{ entry[4] }}</td>
+                  <td>{{ entry[2] }}</td>
+                  <td>{{ entry[5] }}</td>
+                  <td>{{ entry[6] or '—' }}</td>
+                  <td>{{ entry[9] or '—' }}</td>
+                  <td>{{ entry[10] or '—' }}</td>
+                  <td>{{ entry[7] }}</td>
+                  <td>{{ entry[8] }}</td>
+              </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+    </div>
 </div>
 </body>
 </html>
