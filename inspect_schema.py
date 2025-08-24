@@ -33,7 +33,12 @@ tables_to_inspect = [
     "prescriptions",          # 💊 Newly added
     "test_recommendations",   # 🧪 Newly added
     "referrals",              # 📨 Newly added
-    "follow_ups"              # 📅 Newly added
+    "follow_ups",             # 📅 Newly added
+    "invoices",               # 🧾 Billing
+    "invoice_items",          # 📄 Billing
+    "payments",               # 💳 Billing
+    "billing_services",       # 📦 Billing
+    "role_salaries"           # 💼 Payroll
 ]
 
 # Run inspection

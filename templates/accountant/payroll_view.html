@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payroll Overview</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            margin: 0;
+            background-color: #f9f9f9;
+        }
+
+        /* Back Button */
+        .back-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #007BFF;
+            color: white;
+            padding: 6px 14px;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 4px;
+            z-index: 999;
+        }
+
+        /* Centered Heading */
+        .page-title {
+            text-align: center;
+            font-size: 24px;
+            color: #2c3e50;
+            margin-top: 60px;
+            margin-bottom: 10px;
+        }
+
+        .page-title span.icon {
+            font-size: 26px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+            font-size: 13px;
+            background-color: white;
+        }
+
+        th, td {
+            padding: 6px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f0f0f0;
+        }
+
+        .pay-btn {
+            background-color: #28a745;
+            color: white;
+            padding: 4px 10px;
+            font-size: 12px;
+            border: none;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .summary {
+            margin-top: 30px;
+        }
+
+        .summary h3 {
+            color: #28a745;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        @media screen and (max-width: 600px) {
+            table, th, td {
+                font-size: 12px;
+                padding: 4px;
+            }
+
+            .pay-btn {
+                padding: 3px 8px;
+                font-size: 11px;
+            }
+
+            .back-btn {
+                font-size: 12px;
+                padding: 5px 10px;
+            }
+
+            .page-title {
+                font-size: 20px;
+            }
+
+            .summary h3 {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Back Button -->
+    <button class="back-btn" onclick="history.back()">Back</button>
+
+    <!-- Styled Heading -->
+    <h2 class="page-title"><span class="icon">💼</span>Payroll Overview</h2>
+
+    <!-- Payroll Table -->
+    <table>
+        <thead>
+            <tr>
+                <th>User ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Role</th>
+                <th>Salary</th>
+                <th>Currency</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in payroll %}
+            <tr>
+                <td>{{ user[0] }}</td>
+                <td>{{ user[1] }}</td>
+                <td>{{ user[2] }}</td>
+                <td>{{ user[3] }}</td>
+                <td>{{ user[4] }}</td>
+                <td>{{ user[5] }}</td>
+                <td>
+                    <form action="{{ url_for('accountant.pay_user') }}" method="POST">
+                        <input type="hidden" name="user_id" value="{{ user[0] }}">
+                        <button type="submit" class="pay-btn">Pay</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Persistent Payment Summary -->
+    {% if payments %}
+    <div class="summary">
+        <h3>Payment Summary</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Message</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments %}
+                <tr>
+                    <td>✅ You paid UGX {{ payment.amount_paid }} to {{ payment.first_name }} {{ payment.last_name }} — {{ payment.role }}</td>
+                    <td>{{ payment.formatted_date }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</body>
+</html>

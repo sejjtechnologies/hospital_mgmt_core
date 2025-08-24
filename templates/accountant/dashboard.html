@@ -38,6 +38,16 @@
 <div class="container mt-5 text-center">
   <h2 class="fw-bold">Welcome, Accountant</h2>
   <p class="lead">Track payments, manage billing, and oversee financial records.</p>
+
+  <!-- Action Buttons -->
+  <div class="row justify-content-center g-3 mt-4">
+    <div class="col-12 col-md-5">
+      <a class="btn btn-primary btn-lg w-100" href="{{ url_for('accountant.billing_dashboard') }}" role="button">Patient Billing</a>
+    </div>
+    <div class="col-12 col-md-5">
+      <a class="btn btn-success btn-lg w-100" href="{{ url_for('accountant.view_payroll') }}" role="button">Payroll System</a>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

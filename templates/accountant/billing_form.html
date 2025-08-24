@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Generate Invoice</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f8f9fa;
+      padding-top: 70px;
+    }
+
+    .btn-back {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      font-size: 0.9rem;
+      border-radius: 4px;
+      margin-left: 20px;
+      margin-top: 15px;
+    }
+
+    .btn-back:hover {
+      background-color: #0056b3;
+    }
+
+    .form-select {
+      max-width: 300px;
+    }
+
+    .btn-generate {
+      font-size: 0.9rem;
+      padding: 6px 16px;
+    }
+
+    h2.page-title {
+      color: #007bff;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    p.subheading {
+      color: #000;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    @media (max-width: 576px) {
+      .navbar .btn {
+        width: 100%;
+        margin-top: 10px;
+      }
+      .form-select {
+        width: 100%;
+        max-width: 100%;
+      }
+      .btn-back {
+        width: 100%;
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold" href="#">🏥 HMS - Accountant</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="btn btn-outline-light" href="{{ url_for('accountant.accountant_logout') }}">Logout</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Back Button -->
+<div>
+  <button class="btn-back" onclick="history.back()">Back</button>
+</div>
+
+<!-- Page Content -->
+<div class="container mt-4">
+  <h2 class="page-title"><i class="fas fa-file-invoice-dollar me-2"></i>Generate Invoice</h2>
+  <p class="subheading">Select patient to view recommended tests and compile an invoice.</p>
+
+  <!-- Patient Selection -->
+  <form method="GET" action="{{ url_for('accountant.billing_for_patient', patient_id=0) }}">
+    <div class="mb-3">
+      <label for="patient_id" class="form-label fw-bold">Select Patient:</label>
+      <select class="form-select" name="patient_id" title="Select Patient"
+              onchange="this.form.action = '/accountant/billing/' + this.value; this.form.submit();" required>
+        <option value="" disabled selected>-- Choose Patient --</option>
+        {% for patient in patients %}
+          <option value="{{ patient.id }}" {% if selected_patient_id == patient.id %}selected{% endif %}>
+            {{ patient.first_name }} {{ patient.last_name }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+  </form>
+
+  {% if tests %}
+  <!-- Test Selection -->
+  <form method="POST" action="{{ url_for('accountant.generate_invoice') }}">
+    <input type="hidden" name="patient_id" value="{{ selected_patient_id }}">
+    <div class="mb-3">
+      <label class="form-label fw-bold">Select Tests:</label>
+      <div class="form-check">
+        {% for test in tests %}
+          <input class="form-check-input" type="checkbox" name="test_ids" value="{{ test.id }}" id="test{{ test.id }}">
+          <label class="form-check-label" for="test{{ test.id }}">
+            {{ test.test_name }} — {{ test.reason }}
+          </label><br>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="text-end">
+      <button type="submit" class="btn btn-primary btn-generate">Generate Invoice</button>
+    </div>
+  </form>
+  {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+</body>
+</html>
